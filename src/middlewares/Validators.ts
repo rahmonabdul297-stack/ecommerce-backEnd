@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, oneOf, param } from "express-validator";
 const ValidateNewUserDetails = [
   body("name").isLength({ min: 3 }).withMessage("name is missing!"),
   body("username").isLength({ min: 3 }).withMessage("username is missing!"),
@@ -14,9 +14,13 @@ const ValidateNewUserDetails = [
 ];
 
 const ValidateSigninDetails = [
-  body("loginId")
-    .isLength({ min: 3 })
-    .withMessage("Enter valid username or email!"),
+  oneOf([
+    body("email").isEmail().withMessage("Enter valid username or email!"),
+    body("username")
+      .isLength({ min: 3 })
+      .withMessage("Enter valid username or email!"),
+  ]),
+
   body("password")
     .isLength({ min: 8 })
     .withMessage("Enter valid username or email!"),
@@ -116,14 +120,16 @@ const validateAddressIdParam = [
   param("addressId").isMongoId().withMessage("Invalid Address ID format"),
 ];
 
-
- const validateCheckout = [
-  body('cartId').isMongoId().withMessage('Valid Cart ID is required'),
-  body('addressId').optional().isMongoId().withMessage('Invalid Address ID format'),
+const validateCheckout = [
+  body("cartId").isMongoId().withMessage("Valid Cart ID is required"),
+  body("addressId")
+    .optional()
+    .isMongoId()
+    .withMessage("Invalid Address ID format"),
 ];
 
- const validateOrderIdParam = [
-  param('orderId').isMongoId().withMessage('Invalid Order ID format'),
+const validateOrderIdParam = [
+  param("orderId").isMongoId().withMessage("Invalid Order ID format"),
 ];
 export {
   ValidateNewUserDetails,
@@ -139,5 +145,5 @@ export {
   validateUpdateAddress,
   validateAddressIdParam,
   validateCheckout,
-  validateOrderIdParam
+  validateOrderIdParam,
 };

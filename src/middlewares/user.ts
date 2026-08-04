@@ -107,7 +107,7 @@ const validateResetOTP = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { phone, OTP } = req.body;
+  const { OTP } = req.body;
   if (!OTP) {
     return sendErrorResponse(res, "Enter your OTP!");
   }
@@ -117,11 +117,7 @@ const validateResetOTP = async (
   if (!isOtpExist) {
     return sendErrorResponse(res, "OTP doesn't exist!");
   }
-  const user = await User.findOne({ phone: phone });
-  if (!user) {
-    return sendErrorResponse(res, "User doesn't exist!");
-  }
-  req.body.user = user;
+  req.body.OTP = OTP;
   next();
 };
 

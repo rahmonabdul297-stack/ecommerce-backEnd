@@ -269,7 +269,16 @@ const resetUserPassword = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { user, password } = req.body;
+  const { OTP, password } = req.body;
+  const getUser = await resetForgetPasswordToken.findOne({ OTP: OTP });
+  const owner = getUser?.owner;
+  if (!owner) {
+    return sendErrorResponse(res, "Enter valid OTP!");
+  }
+  const user = await User.findById(owner);
+  if (!user) {
+    return sendErrorResponse(res, "??");
+  }
   const isPasswordMatch = bcrypt.compareSync(password, user.password);
   if (isPasswordMatch) {
     return sendErrorResponse(
@@ -282,8 +291,7 @@ const resetUserPassword = async (
     const hashPassword = bcrypt.hashSync(password, salt);
     user.password = hashPassword;
     await user.save();
-    await resetForgetPasswordToken.findOneAndDelete({ owner: user?._id });
-
+    await resetForgetPasswordToken.findByIdAndDelete(user);
     req.body = { user };
     next();
   } catch (error) {
