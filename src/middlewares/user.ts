@@ -53,12 +53,16 @@ const validateExistingUser = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { loginId, password } = req.body;
+  const { password } = req.body;
+  const loginId = req.body.username || req.body.email;
+  if (!loginId) {
+    return sendErrorResponse(res, "username or email are required!");
+  }
   try {
     const exsitingUser = await User.findOne({
       $or: [
-        { username: loginId.toLowerCase() },
-        { email: loginId.toLowerCase() },
+        { username: loginId?.toLowerCase() },
+        { email: loginId?.toLowerCase() },
       ],
     });
     if (!exsitingUser) {

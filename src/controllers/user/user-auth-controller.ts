@@ -277,7 +277,7 @@ const resetUserPassword = async (
   }
   const user = await User.findById(owner);
   if (!user) {
-    return sendErrorResponse(res, "??");
+    return sendErrorResponse(res, "Enter valid OTP");
   }
   const isPasswordMatch = bcrypt.compareSync(password, user.password);
   if (isPasswordMatch) {
