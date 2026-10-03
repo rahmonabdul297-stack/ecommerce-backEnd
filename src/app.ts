@@ -6,9 +6,23 @@ import UserAuth from "./routes/user/user-auth-route.ts";
 import UserProfile from "./routes/user/user-profile-route.ts";
 import paymentRoutes from "./routes/payment/payment-route.ts";
 import connectDB from "./db/index.ts";
-
+import cors from "cors";
+import cookieParser from "cookie-parser";
 const app = express();
 const PORT = 5000;
+app.use(cookieParser());
+// Enable CORS for your local frontend and production frontend
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Local Vite dev server
+      "http://localhost:3000", // Alternative local port just in case
+      // Add your production frontend Vercel URL here later, e.g.:
+      // 'https://abdulrahmon-portfolio-website.vercel.app'
+    ],
+    credentials: true, // Crucial because your app uses cookies for authentication
+  }),
+);
 
 // middleware
 

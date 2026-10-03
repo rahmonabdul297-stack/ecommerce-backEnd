@@ -43,26 +43,9 @@ export const verifyUsersigninToken = async (
   next: NextFunction,
 ) => {
   try {
-    const cookieHeader = req.headers.cookie;
-    if (!cookieHeader) {
-      return sendErrorResponse(
-        res,
-        "no cookies, you're not authenticated",
-        401,
-      );
-    }
-
-    const cookies = Object.fromEntries(
-      cookieHeader.split("; ").map((c) => {
-        const [key, ...val] = c.split("=");
-        return [key, val.join("=")];
-      }),
-    );
-
-    const accessTokenKey = Object.keys(cookies).find(
-      (key) => key !== "refreshToken",
-    );
-    const token = accessTokenKey ? cookies[accessTokenKey] : null;
+    // If you use cookie-parser, req.cookies will contain all parsed cookies automatically
+    // Look for your specific token cookie key (e.g., req.cookies.token or req.cookies.accessToken)
+    const token = req.cookies?.token || req.cookies?.accessToken || req.cookies?.sessionToken;
 
     if (!token) {
       return sendErrorResponse(
@@ -78,7 +61,6 @@ export const verifyUsersigninToken = async (
     ) as TokenPayloadTypes;
 
     (req as any).id = user.id;
-    req.headers.cookie = cookieHeader;
     next();
   } catch (error) {
     console.error("Access Token Verification Error:", (error as Error).message);

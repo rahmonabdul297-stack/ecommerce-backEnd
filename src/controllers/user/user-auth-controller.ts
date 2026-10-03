@@ -150,46 +150,94 @@ const getMe = async (req: Request, res: Response) => {
 };
 
 // logout from the acc
+// const signOut = async (req: Request, res: Response) => {
+//   try {
+//     const userId = (req as any).id;
+//     const cookieHeader = req.headers.cookie;
+//     if (!cookieHeader) {
+//       return sendErrorResponse(res, "No active session found.");
+//     }
+//     if (userId) {
+//       res.clearCookie(String(userId), {
+//         path: "/",
+//         httpOnly: true,
+//         sameSite: "lax",
+//         secure: process.env.NODE_ENV !== "development",
+//       });
+//     } else {
+//       const cookies = Object.fromEntries(
+//         cookieHeader.split("; ").map((c) => {
+//           const [key, ...val] = c.split("=");
+//           return [key, val.join("=")];
+//         }),
+//       );
+//       const accessTokenKey = Object.keys(cookies).find(
+//         (key) => key !== "refreshToken",
+//       );
+//       if (accessTokenKey) {
+//         res.clearCookie(accessTokenKey, {
+//           path: "/",
+//           httpOnly: true,
+//           sameSite: "lax",
+//           secure: process.env.NODE_ENV !== "development",
+//         });
+//       }
+//     }
+
+//     res.clearCookie("refreshToken", {
+//       path: "/",
+//       httpOnly: true,
+//       sameSite: "lax",
+//       secure: process.env.NODE_ENV !== "development",
+//     });
+
+//     return sendSuccessResponse(res, "Successfully signed out!");
+//   } catch (error) {
+//     console.error("Sign Out Error:", (error as Error).message);
+//     return sendErrorResponse(
+//       res,
+//       "An unexpected error occurred during sign out.",
+//     );
+//   }
+// };
+
+
 const signOut = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).id;
-    const cookieHeader = req.headers.cookie;
-    if (!cookieHeader) {
-      return sendErrorResponse(res, "No active session found.");
-    }
-    if (userId) {
-      res.clearCookie(String(userId), {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    // Common cookie names your app might use for authentication sessions
+    const possibleCookieNames = ["token", "accessToken", "sessionToken", "refreshToken"];
+
+    // Clear all potential session & token cookies explicitly
+    for (const cookieName of possibleCookieNames) {
+      res.clearCookie(cookieName, {
         path: "/",
         httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV !== "development",
+        sameSite: isProduction ? "none" : "lax",
+        secure: isProduction,
       });
-    } else {
+    }
+
+    // Also clear any dynamically found cookies from request headers just in case
+    const cookieHeader = req.headers.cookie;
+    if (cookieHeader) {
       const cookies = Object.fromEntries(
         cookieHeader.split("; ").map((c) => {
           const [key, ...val] = c.split("=");
           return [key, val.join("=")];
         }),
       );
-      const accessTokenKey = Object.keys(cookies).find(
-        (key) => key !== "refreshToken",
-      );
-      if (accessTokenKey) {
-        res.clearCookie(accessTokenKey, {
+      
+      for (const key of Object.keys(cookies)) {
+        res.clearCookie(key, {
           path: "/",
           httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV !== "development",
+          sameSite: isProduction ? "none" : "lax",
+          secure: isProduction,
         });
       }
     }
-
-    res.clearCookie("refreshToken", {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV !== "development",
-    });
 
     return sendSuccessResponse(res, "Successfully signed out!");
   } catch (error) {
