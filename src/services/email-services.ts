@@ -12,7 +12,8 @@ import { User } from "../models/User.ts";
 import { sendSMS } from "../utils/sendsms.utils.ts";
 
 export const sendResetPasswordMail = async (req: Request, res: Response) => {
-  const FRONTEND_URL = process.env.FRONTEND_URL;
+  const FRONTEND_URL =
+    process.env.FRONTEND_URL || "http://localhost:5173";
   const { user, token } = req.body;
   const send_to = user.email;
   const fullName = user.name.split(" ")[0];

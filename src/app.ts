@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // Local Vite dev server
-      "http://localhost:3000", // Alternative local port just in case
+      "https://nokata-ten.vercel.app", // Alternative local port just in case
       // Add your production frontend Vercel URL here later, e.g.:
       // 'https://abdulrahmon-portfolio-website.vercel.app'
     ],
