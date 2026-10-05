@@ -25,7 +25,6 @@
     "mongoose": "^9.6.1",
     "multer": "^2.2.0",
     "nodemailer": "^8.0.11",
-    "nodemon": "^3.1.14",
     "resend": "^6.18.0",
     "twilio": "^6.0.2"
   },
@@ -38,6 +37,7 @@
     "@types/node": "^25.6.0",
     "@types/nodemailer": "^8.0.1",
     "@types/twilio": "^3.19.2",
+    "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }
