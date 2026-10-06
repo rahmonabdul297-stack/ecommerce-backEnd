@@ -1,5 +1,10 @@
 import { Router } from "express";
 import {
+  getPublishedProduct,
+  listPublishedProducts,
+} from "../../controllers/public/products.ts";
+import { listActiveCategories } from "../../controllers/public/categories.ts";
+import {
   validateAddToCart,
   validateCheckout,
   validateOrderIdParam,
@@ -22,6 +27,10 @@ import {
 } from "../../controllers/user/order.ts";
 
 const router = Router();
+
+router.get("/products", listPublishedProducts);
+router.get("/products/:id", getPublishedProduct);
+router.get("/categories", listActiveCategories);
 
 router.get("/getCart", verifyUsersigninToken, getCart);
 
