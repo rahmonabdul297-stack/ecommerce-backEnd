@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IOrderItem {
   product: Types.ObjectId;
@@ -21,8 +21,8 @@ export interface IOrder extends Document {
     recipientPhone?: string | undefined;
   };
   totalAmount: number;
-  paymentStatus: 'pending' | 'paid' | 'failed';
-  orderStatus: 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentStatus: "pending" | "paid" | "failed";
+  orderStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   paymentReference?: string;
   createdAt: Date;
   updatedAt: Date;

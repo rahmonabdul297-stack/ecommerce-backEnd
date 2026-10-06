@@ -1,4 +1,8 @@
 import { Router } from "express";
+import {
+  listOrders,
+  updateOrderStatus,
+} from "../../controllers/admin/orders.ts";
 import { deleteUser, getAllUsers } from "../../controllers/admin/users.ts";
 import {
   createProduct,
@@ -16,7 +20,13 @@ import {
   getAllCategories,
   updateCategory,
 } from "../../controllers/admin/categories.ts";
+import { requireAdmin } from "../../middlewares/admin.ts";
 const router = Router();
+router.use(requireAdmin);
+
+router.get("/orders", listOrders);
+router.patch("/orders/:id/status", updateOrderStatus);
+
 // audience
 router.get("/users", getAllUsers);
 router.delete("/delete/:id", deleteUser);

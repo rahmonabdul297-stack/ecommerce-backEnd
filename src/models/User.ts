@@ -28,19 +28,24 @@ const UserSchema = new Schema<UserTypes>({
     type: String,
   },
   addresses: {
-      type: [AddressSchema],
-      default: [],
-    },
+    type: [AddressSchema],
+    default: [],
+  },
   bio: {
     type: String,
   },
   DOB: {
     type: String,
   },
-isVerified: {
-      type: Boolean,
-      default: false, 
-    },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  role: {
+    type: String,
+    enum: ["customer", "admin"],
+    default: "customer",
+  },
   date: {
     type: Date,
     default: Date.now,

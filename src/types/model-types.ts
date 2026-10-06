@@ -10,7 +10,8 @@ export interface UserTypes {
   addresses?: IAddress[];
   bio?: string;
   DOB?: string;
-  isVerified:boolean;
+  isVerified: boolean;
+  role: "customer" | "admin";
   date?: Date;
 }
 
