@@ -9,18 +9,16 @@ import connectDB from "./db/index.ts";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 const app = express();
-const PORT = 5000;
+const PORT = Number(process.env.PORT) || 5000;
 app.use(cookieParser());
-// Enable CORS for your local frontend and production frontend
+const frontendOrigin = new URL(
+  process.env.FRONTEND_URL || "https://nokata-ten.vercel.app",
+).origin;
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Local Vite dev server
-      "https://nokata-ten.vercel.app", // Alternative local port just in case
-      // Add your production frontend Vercel URL here later, e.g.:
-      // 'https://abdulrahmon-portfolio-website.vercel.app'
-    ],
-    credentials: true, // Crucial because your app uses cookies for authentication
+    origin: ["http://localhost:5173", frontendOrigin],
+    credentials: true,
   }),
 );
 

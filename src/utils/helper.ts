@@ -30,10 +30,20 @@ export const sendErrorResponse = (
   });
 };
 
+export const getAuthCookieOptions = (maxAge?: number) => ({
+  path: "/",
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? ("none" as const)
+      : ("lax" as const),
+  ...(maxAge === undefined ? {} : { maxAge }),
+});
+
 export const CheckSession = async (req: Request, res: Response) => {
-  const cookie = req.headers.cookie;
-  if (!cookie) {
-    return sendErrorResponse(res, "no session cookie found!");
+  if (!(req as any).id) {
+    return sendErrorResponse(res, "no session cookie found!", 401);
   }
   return sendSuccessResponse(res, "session found!");
 };
@@ -45,7 +55,10 @@ export const verifyUsersigninToken = async (
   try {
     // If you use cookie-parser, req.cookies will contain all parsed cookies automatically
     // Look for your specific token cookie key (e.g., req.cookies.token or req.cookies.accessToken)
-    const token = req.cookies?.token || req.cookies?.accessToken || req.cookies?.sessionToken;
+    const token =
+      req.cookies?.token ||
+      req.cookies?.accessToken ||
+      req.cookies?.sessionToken;
 
     if (!token) {
       return sendErrorResponse(
@@ -78,7 +91,7 @@ export const refreshSession = async (req: Request, res: Response) => {
 
     if (!oldRefreshToken && req.headers.cookie) {
       const match = req.headers.cookie.match(
-        new RegExp("(^| )refreshToken=([^;]+)")
+        new RegExp("(^| )refreshToken=([^;]+)"),
       );
       if (match) {
         oldRefreshToken = match[2];
@@ -89,7 +102,7 @@ export const refreshSession = async (req: Request, res: Response) => {
       return sendErrorResponse(
         res,
         "Access Denied: No refresh token provided.",
-        401
+        401,
       );
     }
 
@@ -97,58 +110,57 @@ export const refreshSession = async (req: Request, res: Response) => {
     try {
       decoded = jwt.verify(
         oldRefreshToken,
-        process.env.REFRESH_TOKEN_SECRET as string
+        process.env.REFRESH_TOKEN_SECRET as string,
       ) as CustomTokenPayload;
     } catch (jwtError) {
       console.log("JWT Verification failed. Token sent was:", oldRefreshToken);
-      return sendErrorResponse(res, "Session expired. Please sign in again.", 401);
+      return sendErrorResponse(
+        res,
+        "Session expired. Please sign in again.",
+        401,
+      );
     }
 
     // 1. Double-check user still exists in DB
     const user = await User.findById(decoded.id);
     if (!user) {
-      return sendErrorResponse(res, "User no longer exists. Please sign in again.", 401);
+      return sendErrorResponse(
+        res,
+        "User no longer exists. Please sign in again.",
+        401,
+      );
     }
-
-    // 2. Cookie configuration helper
-    const isProduction = process.env.NODE_ENV === "production";
 
     // 3. Generate new Access Token (15 min)
     const newAccessToken = jwt.sign(
       { id: user._id },
       process.env.JWT_USER_SECRET as string,
-      { expiresIn: "15m" }
+      { expiresIn: "15m" },
     );
 
-    res.cookie("accessToken", newAccessToken, {
-      path: "/",
-      expires: new Date(Date.now() + 1000 * 60 * 15), // 15 mins
-      httpOnly: true,
-      sameSite: "lax",
-      secure: isProduction, // <-- Fixed: Only true in production!
-    });
+    res.cookie(
+      "accessToken",
+      newAccessToken,
+      getAuthCookieOptions(15 * 60 * 1000),
+    );
 
     // 4. Generate new extended Refresh Token (7 days)
     const cookieMaxAge = 1000 * 60 * 60 * 24 * 7; // 7 days
     const newRefreshToken = jwt.sign(
       { id: user._id, sessionType: "extended" },
       process.env.REFRESH_TOKEN_SECRET as string,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
-    res.cookie("refreshToken", newRefreshToken, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: isProduction, // <-- Fixed: Only true in production!
-      expires: new Date(Date.now() + cookieMaxAge), // Rolling 7-day extension!
+    res.cookie(
+      "refreshToken",
+      newRefreshToken,
+      getAuthCookieOptions(cookieMaxAge),
+    );
+
+    return sendSuccessResponse(res, "Session tokens successfully renewed!", {
+      accessToken: newAccessToken,
     });
-
-    return sendSuccessResponse(
-      res,
-      "Session tokens successfully renewed!",
-      { accessToken: newAccessToken }
-    );
   } catch (error) {
     console.error("Critical Refresh Error:", (error as Error).message);
     return sendErrorResponse(res, "An unexpected error occurred.", 500);
@@ -177,10 +189,8 @@ export const createNumericOTP = () =>
     });
   });
 
-
-  export const getCartQuery = (req: Request) => {
-    if (req._id) return { user: req._id };
-    const guestToken = req.headers['x-guest-token'] as string;
-    return { guestToken };
-  };
-  
+export const getCartQuery = (req: Request) => {
+  if (req._id) return { user: req._id };
+  const guestToken = req.headers["x-guest-token"] as string;
+  return { guestToken };
+};

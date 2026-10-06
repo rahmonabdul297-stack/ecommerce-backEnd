@@ -40,7 +40,6 @@ import {
   verifyUsersigninToken,
 } from "../../utils/helper.ts";
 
-
 const router = Router();
 
 router.post(
@@ -49,9 +48,9 @@ router.post(
   Validate,
   validateNewUser,
   signUp,
-  sendVerificationCode
+  sendVerificationCode,
 );
-router.post("/verify-account",verifyAccount)
+router.post("/verify-account", verifyAccount);
 router.post(
   "/sign-in",
   ValidateSigninDetails,
@@ -62,7 +61,7 @@ router.post(
 );
 
 router.post("/sign-out", verifyUsersigninToken, signOut);
-router.get("/check-session", CheckSession);
+router.get("/check-session", verifyUsersigninToken, CheckSession);
 router.post("/refresh", refreshSession);
 router.post(
   "/forgot-password",

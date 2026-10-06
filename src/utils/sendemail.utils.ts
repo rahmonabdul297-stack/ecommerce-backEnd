@@ -27,10 +27,5 @@ export const sendEmail = ({ subject, message, send_to }: sendEmailType) => {
     html: message,
   };
 
-  transporter.sendMail(mailOptions, (err, result) => {
-    if (err) {
-      console.log("error -", err);
-    }
-    console.log("result:", result.messageId);
-  });
+  return transporter.sendMail(mailOptions);
 };

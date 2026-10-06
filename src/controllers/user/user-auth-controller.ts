@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import {
   CreatedRandomBytes,
   createNumericOTP,
+  getAuthCookieOptions,
   sendErrorResponse,
   sendSuccessResponse,
 } from "../../utils/helper.ts";
@@ -88,13 +89,11 @@ const signIn = async (req: Request, res: Response, next: NextFunction) => {
       { expiresIn: "7d" },
     );
 
-    res.cookie(String(exsitingUser._id), token, {
-      path: "/",
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV !== "development",
-    });
+    res.cookie(
+      "accessToken",
+      token,
+      getAuthCookieOptions(7 * 24 * 60 * 60 * 1000),
+    );
 
     const initialRefreshToken = jwt.sign(
       { id: exsitingUser._id, sessionType: "initial" },
@@ -102,17 +101,13 @@ const signIn = async (req: Request, res: Response, next: NextFunction) => {
       { expiresIn: "15m" },
     );
 
-    res.cookie("refreshToken", initialRefreshToken, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV !== "development",
-      expires: new Date(Date.now() + 1000 * 60 * 15),
-    });
+    res.cookie(
+      "refreshToken",
+      initialRefreshToken,
+      getAuthCookieOptions(15 * 60 * 1000),
+    );
     req.body = { exsitingUser };
-    next();
-
-    return sendSuccessResponse(res, "successfully logged in!");
+    return next();
   } catch (error) {
     console.log((error as Error).message);
     return sendErrorResponse(res, (error as Error).message);
@@ -201,22 +196,19 @@ const getMe = async (req: Request, res: Response) => {
 //   }
 // };
 
-
 const signOut = async (req: Request, res: Response) => {
   try {
-    const isProduction = process.env.NODE_ENV === "production";
-
     // Common cookie names your app might use for authentication sessions
-    const possibleCookieNames = ["token", "accessToken", "sessionToken", "refreshToken"];
+    const possibleCookieNames = [
+      "token",
+      "accessToken",
+      "sessionToken",
+      "refreshToken",
+    ];
 
     // Clear all potential session & token cookies explicitly
     for (const cookieName of possibleCookieNames) {
-      res.clearCookie(cookieName, {
-        path: "/",
-        httpOnly: true,
-        sameSite: isProduction ? "none" : "lax",
-        secure: isProduction,
-      });
+      res.clearCookie(cookieName, getAuthCookieOptions());
     }
 
     // Also clear any dynamically found cookies from request headers just in case
@@ -228,14 +220,9 @@ const signOut = async (req: Request, res: Response) => {
           return [key, val.join("=")];
         }),
       );
-      
+
       for (const key of Object.keys(cookies)) {
-        res.clearCookie(key, {
-          path: "/",
-          httpOnly: true,
-          sameSite: isProduction ? "none" : "lax",
-          secure: isProduction,
-        });
+        res.clearCookie(key, getAuthCookieOptions());
       }
     }
 

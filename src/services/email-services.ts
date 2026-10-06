@@ -12,8 +12,7 @@ import { User } from "../models/User.ts";
 import { sendSMS } from "../utils/sendsms.utils.ts";
 
 export const sendResetPasswordMail = async (req: Request, res: Response) => {
-  const FRONTEND_URL =
-    process.env.FRONTEND_URL || "http://localhost:5173";
+  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
   const { user, token } = req.body;
   const send_to = user.email;
   const fullName = user.name.split(" ")[0];
@@ -62,11 +61,13 @@ export const sendSigninMail = async (req: Request, res: Response) => {
     const subject = `Dear ${fullName}, You have successfully sign-in into your Account! `;
     const message = signinMailTemplate(fullName);
     await sendEmail({ subject, message, send_to });
-    return sendSuccessResponse(res, "successfully!", exsitingUser);
   } catch (error) {
-    console.log((error as Error).message);
-    return sendErrorResponse(res, (error as Error).message);
+    console.error(
+      "Sign-in notification email failed:",
+      (error as Error).message,
+    );
   }
+  return sendSuccessResponse(res, "successfully logged in!", exsitingUser);
 };
 
 export const sendVerificationCode = async (req: Request, res: Response) => {
