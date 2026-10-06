@@ -42,7 +42,7 @@ router.patch(
   validateUpdateCartItem,
   updateCartItem,
 );
-router.delete("/clear-cart", clearCart);
+router.delete("/clear-cart", verifyUsersigninToken, clearCart);
 router.delete(
   "/items/:itemId",
   verifyUsersigninToken,
