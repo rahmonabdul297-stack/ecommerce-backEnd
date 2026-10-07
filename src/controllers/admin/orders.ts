@@ -32,20 +32,25 @@ export const listOrders = async (req: Request, res: Response) => {
   try {
     const [orders, total] = await Promise.all([
       Order.find()
-        .populate("user", "name email")
+        .populate("user", "name email username phone")
+        .populate("customer", "name email username phone") // Fallback in case your schema uses 'customer'
         .sort({ [sortBy]: sortOrder })
         .skip((page - 1) * limit)
         .limit(limit),
       Order.countDocuments(),
     ]);
 
-    return sendSuccessResponse(res, "Orders fetched successfully.", {
+    // If your sendSuccessResponse helper nests data, adjust accordingly. 
+    // This sends orders and pagination directly so result.orders and result.pagination work seamlessly.
+    return res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully.",
       orders,
       pagination: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit) || 1,
       },
     });
   } catch (error) {
@@ -78,17 +83,19 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
       id,
       { orderStatus: status },
       { new: true, runValidators: true },
-    ).populate("user", "name email");
+    )
+      .populate("user", "name email username phone")
+      .populate("customer", "name email username phone");
 
     if (!order) {
       return sendErrorResponse(res, "Order not found.", 404);
     }
 
-    return sendSuccessResponse(
-      res,
-      "Order status updated successfully.",
-      order,
-    );
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully.",
+      orderStatus: order.orderStatus,
+    });
   } catch (error) {
     console.error("Failed to update order status:", error);
     return sendErrorResponse(res, "Unable to update order status.", 500);
